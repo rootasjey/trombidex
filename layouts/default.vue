@@ -1,6 +1,6 @@
 <template>
   <div class="min-h-screen flex flex-col">
-    <header class="bg-opacity-70 backdrop-filter backdrop-blur-lg p-4 shadow-lg dark:bg-gray-800 dark:text-white">
+    <header class="bg-opacity-70 p-4 dark:bg-gray-800 dark:text-white">
       <div class="flex justify-center items-center">
         <h1 class="text-4xl font-bold">Trombidex</h1>
       </div>
@@ -12,9 +12,11 @@
         </button>
       </div>
     </header>
-    <main class="flex-grow p-6 md:p-8 lg:p-10 bg-white dark:bg-gray-800 dark:text-white">
+    <main class="flex-grow p-6 md:p-8 lg:p-10 dark:bg-gray-800 dark:text-white">
       <slot />
     </main>
+
+    <div class="border-element"></div>
   </div>
 </template>
 
@@ -25,3 +27,27 @@ const toggleColorMode = () => {
   colorMode.preference = colorMode.value === 'dark' ? 'light' : 'dark'
 }
 </script>
+
+<style scoped>
+.border-element {
+  height: calc(100% - 16px);
+  width: calc(100% - 16px);
+  position: fixed;
+  pointer-events: none;
+  border: 8px solid;
+  border-image: linear-gradient(var(--angle), #ec4899, #d946ef, #a855f7, #d946ef, #ec4899) 1;
+  border-radius: 16px;
+  /* animation: rotate-gradient 8s linear infinite; */
+}
+@property --angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes rotate-gradient {
+  to {
+    --angle: 360deg;
+  }
+}
+</style>
