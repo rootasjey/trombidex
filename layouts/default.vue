@@ -1,8 +1,9 @@
 <template>
   <div class="min-h-screen flex flex-col">
     <header class="bg-opacity-70 p-4 dark:bg-gray-800 dark:text-white">
-      <div class="flex justify-center items-center">
-        <h1 class="text-4xl font-bold">Trombidex</h1>
+      <div class="flex flex-col justify-center items-center">
+        <h1 class="text-8xl font-title font-400">Trombidex</h1>
+        <span class="-mt-12 opacity-60">Search tiny and big creatures, explore another world </span>
       </div>
 
       <div class="absolute top-2 right-6 flex justify-center items-center mt-4">
