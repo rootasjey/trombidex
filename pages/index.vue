@@ -1,10 +1,10 @@
 <template>
-  <div class="max-w-7xl mx-auto">
+  <div class="max-w-7xl mx-auto font-sans">
     <div class="flex flex-col sm:flex-row justify-between items-center mb-6">
       <input v-model="searchQuery" @input="searchPokemon" :placeholder="translations[currentLanguage].search"
-        class="flex-grow mb-4 sm:mb-0 sm:mr-4 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 bg-white bg-opacity-50 backdrop-filter backdrop-blur-lg dark:bg-gray-700 dark:text-white dark:border-gray-600" />
+        class="font-sans flex-grow mb-4 sm:mb-0 sm:mr-4 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 bg-white bg-opacity-50 backdrop-filter backdrop-blur-lg dark:bg-gray-700 dark:text-white dark:border-gray-600" />
       <select v-model="currentLanguage" @change="changeLanguage"
-        class="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 bg-white bg-opacity-50 backdrop-filter backdrop-blur-lg dark:bg-gray-700 dark:text-white dark:border-gray-600">
+        class="font-sans p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 bg-white bg-opacity-50 backdrop-filter backdrop-blur-lg dark:bg-gray-700 dark:text-white dark:border-gray-600">
         <option value="en">English</option>
         <option value="fr">Français</option>
       </select>
@@ -16,7 +16,7 @@
         <div class="absolute inset-0 opacity-30 z-0" :style="getGradientStyle(pokemon.types[0])"></div>
         <div class="relative z-10">
           <div class="flex flex-row justify-between mb-2">
-            <span class="text-xs font-semibold">• {{ pokemon.id.toString().padStart(3, '0') }}</span>
+            <span class="text-xs font-mono font-600">• {{ pokemon.id.toString().padStart(3, '0') }}</span>
             <div class="flex flex-wrap justify-center gap-2">
               <span v-for="type in pokemon.types" :key="type" class="px-2 py-1 rounded-full text-xs font-semibold"
                 :class="getTypeClass(type)">
