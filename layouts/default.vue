@@ -2,8 +2,8 @@
   <div class="min-h-screen flex flex-col">
     <header class="bg-opacity-70 p-4 dark:bg-gray-800 dark:text-white">
       <div class="flex flex-col justify-center items-center">
-        <h1 class="text-8xl font-title font-400">Trombidex</h1>
-        <span class="-mt-12 opacity-60">Search tiny and big creatures, explore another world </span>
+        <h1 class="text-8xl font-title font-400 mt-12">Trombidex</h1>
+        <span class="opacity-60">Search tiny and big creatures, explore another world </span>
       </div>
 
       <div class="absolute top-2 right-6 flex justify-center items-center mt-4">
@@ -31,8 +31,8 @@ const toggleColorMode = () => {
 
 <style scoped>
 .border-element {
-  height: calc(100% - 16px);
-  width: calc(100% - 16px);
+  height: 100%;
+  width: 100%;
   position: fixed;
   pointer-events: none;
   border: 8px solid;

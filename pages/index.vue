@@ -9,10 +9,10 @@
         <option value="fr">Français</option>
       </select>
     </div>
-    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6"
-        :class="`lg:grid-cols-${numberOfRows}`" 
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6" 
+        :class="`lg:grid-cols-${numberOfRows}`"
         ref="pokemonGrid"
-      >
+    >
       <div v-for="pokemon in displayedPokemon" :key="pokemon.id"
         class="pokemon-card bg-white bg-opacity-30 backdrop-filter flex flex-col backdrop-blur-lg rounded-lg shadow-lg p-4 cursor-pointer transition-all hover:bg-opacity-40 dark:bg-gray-800 dark:bg-opacity-30 dark:text-white relative overflow-hidden"
         @click="showDetails(pokemon)">
@@ -21,11 +21,22 @@
           <div class="flex flex-row justify-between mb-2">
             <span class="text-xs font-mono font-600">• {{ pokemon.id.toString().padStart(3, '0') }}</span>
             <div class="flex flex-wrap justify-center gap-2">
-              <span v-for="type in pokemon.types" :key="type" class="px-2 py-1 rounded-full text-xs font-semibold"
-                :class="getTypeClass(type)">
-                <span class="w-4 h-4 rounded-full text-xs font-semibold" :class="getTypeClass(type)">
-                </span>
-              </span>
+              <UTooltip v-for="type in pokemon.types" :key="type" tooltip="gray" :_tooltip-provider="{
+                delayDuration: 0,
+                disableClosingTrigger: true,
+                disableHoverableContent: true,
+              }">
+                <template #default>
+                  <span class="w-4 h-4 rounded-full text-xs font-semibold" :class="getTypeClass(type)">
+                  </span>
+                </template>
+
+                <template #content>
+                  <span class="px-2 py-1 rounded-full text-xs font-semibold" :class="getTypeClass(type)">
+                    {{ type }}
+                  </span>
+                </template>
+              </UTooltip>
             </div>
           </div>
           <div class="flex flex-col items-center">
@@ -138,6 +149,37 @@ const getGradientStyle = (type) => {
  * A column is added for each 60px of screen width.
  **/
 const numberOfRows = ref(8) // Initial value
+
+/**
+ * An object that maps the number of grid columns to the corresponding unocss class for large screens.
+ * This is used to dynamically adjust the grid layout based on the screen width.
+ */
+const gridColumnClass = {
+  1: 'lg:grid-cols-1',
+  2: 'lg:grid-cols-2',
+  3: 'lg:grid-cols-3',
+  4: 'lg:grid-cols-4',
+  5: 'lg:grid-cols-5',
+  6: 'lg:grid-cols-6',
+  7: 'lg:grid-cols-7',
+  8: 'lg:grid-cols-8',
+  9: 'lg:grid-cols-9',
+  10: 'lg:grid-cols-10',
+  11: 'lg:grid-cols-11',
+  12: 'lg:grid-cols-12',
+  13: 'lg:grid-cols-13',
+  14: 'lg:grid-cols-14',
+  15: 'lg:grid-cols-15',
+  16: 'lg:grid-cols-16',
+  17: 'lg:grid-cols-17',
+  18: 'lg:grid-cols-18',
+  19: 'lg:grid-cols-19',
+  20: 'lg:grid-cols-20',
+  21: 'lg:grid-cols-21',
+  22: 'lg:grid-cols-22',
+  23: 'lg:grid-cols-23',
+  24: 'lg:grid-cols-24',
+}
 
 const fetchPokemon = async () => {
   if (isLoading.value) return;

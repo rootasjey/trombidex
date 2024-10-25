@@ -2,7 +2,14 @@
 export default defineNuxtConfig({
   compatibilityDate: '2024-04-03',
   devtools: { enabled: false },
-  modules: ['@unocss/nuxt', '@nuxtjs/color-mode'],
+  modules: [
+    '@unocss/nuxt', 
+    '@nuxtjs/color-mode',
+    '@una-ui/nuxt',
+  ],
+  una: {
+    prefix: 'U', // UBtn, UInput, UFormGroup, etc.
+  },
   unocss: {
     // presets
     uno: true, // enabled `@unocss/preset-uno`
