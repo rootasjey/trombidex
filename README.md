@@ -1,21 +1,30 @@
-# notapokedex
 
+<p align="center">
+<img src="./assets/images/app-icon/favicon-192.png" alt="Trombidex" width="200" />
+</p>
+
+<h1 align="center">
+Trombidex
+</h1>
+
+<p align="center">
 A simple pokedex app for experiments.
+</p>
 
 ## Quickstart
 
 You can test the app at the available URL at the top of this page.
 
-## screenshots
+## Screenshots
 
 ![home.png](screenshots/home-1.png)
 
-## features
+## Features
 
 * Browse Pokemons list
 * Search a Pokemon by name or by id
 
-## development
+## Development
 
 * Clone the repo with `git clone https://github.com/rootasjey/trombidex`
 * Go to the cloned repo with `cd trombidex`
