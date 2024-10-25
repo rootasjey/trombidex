@@ -9,7 +9,7 @@
         <option value="fr">Français</option>
       </select>
     </div>
-    <div class="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6" ref="pokemonGrid">
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6" ref="pokemonGrid">
       <div v-for="pokemon in displayedPokemon" :key="pokemon.id"
         class="pokemon-card bg-white bg-opacity-30 backdrop-filter flex flex-col backdrop-blur-lg rounded-lg shadow-lg p-4 cursor-pointer transition-all hover:bg-opacity-40 dark:bg-gray-800 dark:bg-opacity-30 dark:text-white relative overflow-hidden"
         @click="showDetails(pokemon)">
