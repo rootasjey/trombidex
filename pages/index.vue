@@ -9,7 +9,10 @@
         <option value="fr">Français</option>
       </select>
     </div>
-    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6" ref="pokemonGrid">
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6"
+        :class="`lg:grid-cols-${numberOfRows}`" 
+        ref="pokemonGrid"
+      >
       <div v-for="pokemon in displayedPokemon" :key="pokemon.id"
         class="pokemon-card bg-white bg-opacity-30 backdrop-filter flex flex-col backdrop-blur-lg rounded-lg shadow-lg p-4 cursor-pointer transition-all hover:bg-opacity-40 dark:bg-gray-800 dark:bg-opacity-30 dark:text-white relative overflow-hidden"
         @click="showDetails(pokemon)">
@@ -26,7 +29,7 @@
             </div>
           </div>
           <div class="flex flex-col items-center">
-            <img :src="pokemon.image" :alt="pokemon.name" class="w-32 h-32 mx-auto" />
+            <img :src="pokemon.image" :alt="pokemon.name" class="w-24 h-24 mx-auto" />
           </div>
           <!-- <h3 class="text-lg font-semibold text-center mb-2">{{ pokemon.translatedName || pokemon.name }}</h3> -->
         </div>
@@ -130,7 +133,12 @@ const getGradientStyle = (type) => {
   };
 };
 
-  
+/** 
+ * Number of rows in the grid according to the screen width.
+ * A column is added for each 60px of screen width.
+ **/
+const numberOfRows = ref(8) // Initial value
+
 const fetchPokemon = async () => {
   if (isLoading.value) return;
   isLoading.value = true;
@@ -226,9 +234,17 @@ onMounted(() => {
   if (savedLanguage) {
     currentLanguage.value = savedLanguage;
   }
+  
   fetchPokemon();
   window.addEventListener('scroll', handleScroll);
   initTilt();
+
+  const updateGridColumns = () => {
+    numberOfRows.value = Math.floor(window.innerWidth / 180)
+  }
+
+  window.addEventListener('resize', updateGridColumns)
+  updateGridColumns() // Initial call
 });
 
 onUnmounted(() => {
