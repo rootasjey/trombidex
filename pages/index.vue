@@ -1,7 +1,7 @@
 <template>
   <div class="max-w-7xl mx-auto font-sans">
     <div class="flex flex-col sm:flex-row justify-between items-center mb-6">
-      <input v-model="searchQuery" @input="searchPokemon" :placeholder="translations[currentLanguage].search"
+      <input v-model="searchQuery" @input="debouncedSearch" :placeholder="translations[currentLanguage].search"
         class="font-sans flex-grow mb-4 sm:mb-0 sm:mr-4 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 bg-white bg-opacity-50 backdrop-filter backdrop-blur-lg dark:bg-gray-700 dark:text-white dark:border-gray-600" />
       <select v-model="currentLanguage" @change="changeLanguage"
         class="font-sans p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 bg-white bg-opacity-50 backdrop-filter backdrop-blur-lg dark:bg-gray-700 dark:text-white dark:border-gray-600">
@@ -14,17 +14,36 @@
         ref="pokemonGrid"
     >
       <div v-for="pokemon in displayedPokemon" :key="pokemon.id"
-        class="pokemon-card bg-white bg-opacity-30 backdrop-filter flex flex-col backdrop-blur-lg rounded-lg shadow-lg p-4 cursor-pointer transition-all hover:bg-opacity-40 dark:bg-gray-800 dark:bg-opacity-30 dark:text-white relative overflow-hidden"
+        class="pokemon-card
+           bg-white bg-opacity-30 backdrop-filter flex flex-col backdrop-blur-lg 
+           rounded-lg shadow-lg p-4 cursor-pointer transition-all 
+           hover:bg-opacity-40 dark:bg-gray-800 
+           dark:bg-opacity-30 dark:text-white relative overflow-hidden
+           cursor-pointer"
         @click="showDetails(pokemon)">
-        <div class="absolute inset-0 opacity-30 z-0" :style="getGradientStyle(pokemon.types[0])"></div>
+        <div class="absolute inset-0 opacity-30 z-0" :style="getGradientStyle(pokemon.types?.at(0))"></div>
         <div class="relative z-10">
           <div class="flex flex-row justify-between mb-2">
-            <span class="text-xs font-mono font-600">• {{ pokemon.id.toString().padStart(3, '0') }}</span>
+            <UTooltip 
+              size="xs" 
+              :_tooltip-provider="{
+                delayDuration: 0,
+              }"
+            >
+              <template #default>
+                <span class="text-xs font-mono font-600">• {{ pokemon.id.toString().padStart(3, '0') }}</span>
+              </template>
+
+              <template #content>
+                <span class="px-2 py-1 rounded-full text-xs font-semibold" :class="getTypeClass(pokemon.types?.at(0))">
+                  {{ pokemon.translatedName || pokemon.name }}
+                </span>
+              </template>
+            </UTooltip>
+
             <div class="flex flex-wrap justify-center gap-2">
               <UTooltip v-for="type in pokemon.types" :key="type" tooltip="gray" :_tooltip-provider="{
                 delayDuration: 0,
-                disableClosingTrigger: true,
-                disableHoverableContent: true,
               }">
                 <template #default>
                   <span class="w-4 h-4 rounded-full text-xs font-semibold" :class="getTypeClass(type)">
@@ -45,6 +64,13 @@
           <!-- <h3 class="text-lg font-semibold text-center mb-2">{{ pokemon.translatedName || pokemon.name }}</h3> -->
         </div>
       </div>
+
+      <UButton
+        :label="isLoading ? 'Leading...' : 'Load More'"
+        btn="outline"
+        :loading="isLoading"
+        @click="fetchPokemons();"
+      />
     </div>
     <div v-if="isLoading" class="text-center mt-6 text-white italic dark:text-gray-300">{{
       translations[currentLanguage].loading }}</div>
@@ -57,17 +83,21 @@
 import { ref, onMounted, onUnmounted, watch } from 'vue';
 import VanillaTilt from 'vanilla-tilt';
   
-const currentLanguage = ref('en');
-const pokemonList = ref([]);
-const displayedPokemon = ref([]);
-const searchQuery = ref('');
-const selectedPokemon = ref(null);
-const isLoading = ref(false);
-const pokemonGrid = ref(null);
-const limit = 20;
-let offset = 0;
-  
-// Add this to handle color mode changes
+const currentLanguage   = ref('en');
+const pokemonList       = ref([]);
+const displayedPokemon  = ref([]);
+const searchQuery       = ref('');
+const selectedPokemon   = ref(null);
+const isLoading         = ref(false);
+const pokemonGrid       = ref(null);
+const searchTimeout     = ref(null)
+
+/** API limit. */
+const limit = 24;
+
+/** API offset. */
+let offset  = 0;
+
 const colorMode = useColorMode()
 
 const translations = {
@@ -181,24 +211,24 @@ const gridColumnClass = {
   24: 'lg:grid-cols-24',
 }
 
-const fetchPokemon = async () => {
+/**
+ * Fetches a batch of Pokemon from the server and updates the displayed Pokemon list.
+ *
+ * This function is responsible for fetching a new batch of Pokemon from the '/api/list' endpoint, appending them to the existing Pokemon list, and updating the displayed Pokemon list accordingly.
+ *
+ * The function checks if a fetch is already in progress before starting a new one. It then fetches the new Pokemon, updates the Pokemon list and the displayed Pokemon list, and increments the offset for the next fetch.
+ */
+const fetchPokemons = async () => {
   if (isLoading.value) return;
   isLoading.value = true;
-  const response = await fetch(`https://pokeapi.co/api/v2/pokemon?limit=${limit}&offset=${offset}`);
-  const data = await response.json();
-  const newPokemon = await Promise.all(data.results.map(async (pokemon) => {
-    const detailResponse = await fetch(pokemon.url);
-    const detailData = await detailResponse.json();
-    const speciesResponse = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${detailData.id}/`);
-    const speciesData = await speciesResponse.json();
-    return {
-      name: pokemon.name,
-      image: detailData.sprites.front_default,
-      types: detailData.types.map(type => type.type.name),
-      id: detailData.id,
-      names: speciesData.names,
-    };
-  }));
+
+  const newPokemon = await $fetch('/api/list', {
+    params: {
+      limit,
+      offset
+    }
+  });
+
   pokemonList.value = [...pokemonList.value, ...newPokemon];
   updateDisplayedPokemon();
   offset += limit;
@@ -213,19 +243,52 @@ const updateDisplayedPokemon = () => {
 };
 
 const getTranslatedName = (pokemon, language) => {
+  if (!pokemon.names) return pokemon.name;
   const translation = pokemon.names.find(name => name.language.name === language);
   return translation ? translation.name : pokemon.name;
 };
 
-const searchPokemon = () => {
-  displayedPokemon.value = pokemonList.value.filter(pokemon => 
-    pokemon.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-    getTranslatedName(pokemon, currentLanguage.value).toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-    pokemon.types.some(type => type.toLowerCase().includes(searchQuery.value.toLowerCase()))
-  ).map(pokemon => ({
+const debouncedSearch = () => {
+  if (searchTimeout.value) {
+    clearTimeout(searchTimeout.value)
+  }
+
+  searchTimeout.value = setTimeout(() => {
+    searchPokemon()
+  }, 700)
+}
+
+/**
+ * Searches for Pokemon based on the user's search query and updates the displayed Pokemon list accordingly.
+ *
+ * If the search query is empty, the function will update the displayed Pokemon list to show all the Pokemon in the list.
+ *
+ * If the search query is not empty, the function will fetch search results from the '/api/search' endpoint and update the displayed Pokemon list with the search results.
+ */
+const searchPokemon = async () => {
+  if (searchQuery.value.trim() === '') {
+    displayedPokemon.value = pokemonList.value.map(pokemon => ({
+      ...pokemon,
+      translatedName: getTranslatedName(pokemon, currentLanguage.value),
+    }));
+    return;
+  }
+
+  const searchResults = await $fetch('/api/search', {
+    params: { query: searchQuery.value }
+  })
+
+  if (!searchResults || !searchResults.length) {
+    displayedPokemon.value = [];
+    return;
+  }
+  
+  const pokemonResults = searchResults.map((x) => x.item)
+
+  displayedPokemon.value = pokemonResults.map((pokemon) => ({
     ...pokemon,
     translatedName: getTranslatedName(pokemon, currentLanguage.value),
-  }));
+  }))
 };
 
 const showDetails = async (pokemon) => {
@@ -241,12 +304,18 @@ const showDetails = async (pokemon) => {
 };
 
 const handleScroll = () => {
+  if (searchQuery.value.trim().length > 0) return;
+
   const { scrollTop, clientHeight, scrollHeight } = document.documentElement;
   if (scrollTop + clientHeight >= scrollHeight - 100 && !isLoading.value) {
-    fetchPokemon();
+    fetchPokemons();
   }
 };
 
+/**
+ * Updates the user's preferred language and refreshes the displayed Pokemon.
+ * This function is called when the user changes the language preference.
+ */
 const changeLanguage = () => {
   localStorage.setItem('preferredLanguage', currentLanguage.value);
   updateDisplayedPokemon();
@@ -277,7 +346,7 @@ onMounted(() => {
     currentLanguage.value = savedLanguage;
   }
   
-  fetchPokemon();
+  fetchPokemons();
   window.addEventListener('scroll', handleScroll);
   initTilt();
 
@@ -291,6 +360,10 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll);
+
+  if (searchTimeout.value) {
+    clearTimeout(searchTimeout.value)
+  }
 });
 
 watch(currentLanguage, () => {
