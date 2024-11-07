@@ -2,13 +2,18 @@
   <div class="max-w-7xl mx-auto font-sans">
     <div class="flex flex-col sm:flex-row justify-between items-center mb-6">
       <input v-model="searchQuery" @input="debouncedSearch" :placeholder="translations[currentLanguage].search"
-        class="font-sans flex-grow mb-4 sm:mb-0 sm:mr-4 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 bg-white bg-opacity-50 backdrop-filter backdrop-blur-lg dark:bg-gray-700 dark:text-white dark:border-gray-600" />
+        class="font-sans flex-grow mb-4 sm:mb-0 sm:mr-4 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1.2 focus:ring-white-20 bg-white bg-opacity-50 backdrop-filter backdrop-blur-lg dark:bg-transparent dark:text-white dark:border-gray-900" />
+      
       <select v-model="currentLanguage" @change="changeLanguage"
-        class="font-sans p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 bg-white bg-opacity-50 backdrop-filter backdrop-blur-lg dark:bg-gray-700 dark:text-white dark:border-gray-600">
-        <option value="en">English</option>
-        <option value="fr">Français</option>
+        class="
+        font-sans p-2 border border-gray-300 rounded-md 
+        focus:outline-none focus:ring-1.2 focus:ring-white/20 bg-white bg-opacity-50 
+        backdrop-filter backdrop-blur-lg dark:bg-transparent dark:text-white dark:border-gray-900">
+          <option value="en">English</option>
+          <option value="fr">Français</option>
       </select>
     </div>
+
     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6" 
         :class="`lg:grid-cols-${numberOfRows}`"
         ref="pokemonGrid"
@@ -19,9 +24,9 @@
            rounded-lg shadow-lg p-4 cursor-pointer transition-all 
            hover:bg-opacity-40 dark:bg-gray-800 
            dark:bg-opacity-30 dark:text-white relative overflow-hidden
-           cursor-pointer"
-        @click="showDetails(pokemon)">
-        <div class="absolute inset-0 opacity-30 z-0" :style="getGradientStyle(pokemon.types?.at(0))"></div>
+           cursor-pointer border border-black/[0.1] dark:border-white/[0.05]"
+        @click="playPokemonCry(pokemon.id)">
+        <!-- <div class="absolute inset-0 opacity-30 z-0" :style="getGradientStyle(pokemon.types?.at(0))"></div> -->
         <div class="relative z-10">
           <div class="flex flex-row justify-between mb-2">
             <UTooltip 
@@ -31,7 +36,11 @@
               }"
             >
               <template #default>
-                <span class="text-xs font-mono font-600">• {{ pokemon.id.toString().padStart(3, '0') }}</span>
+                <span 
+                  class="text-xs font-mono font-600"
+                  @click="showDetails(pokemon)">
+                  • {{ pokemon.id.toString().padStart(3, '0') }}
+                </span>
               </template>
 
               <template #content>
@@ -41,12 +50,12 @@
               </template>
             </UTooltip>
 
-            <div class="flex flex-wrap justify-center gap-2">
+            <div class="flex flex-wrap justify-center items-center gap-2">
               <UTooltip v-for="type in pokemon.types" :key="type" tooltip="gray" :_tooltip-provider="{
                 delayDuration: 0,
               }">
                 <template #default>
-                  <span class="w-4 h-4 rounded-full text-xs font-semibold" :class="getTypeClass(type)">
+                  <span class="w-4 h-4 md:w-2 md:h-2 rounded-full text-xs font-semibold" :class="getTypeClass(type)">
                   </span>
                 </template>
 
@@ -59,38 +68,44 @@
             </div>
           </div>
           <div class="flex flex-col items-center">
-            <img :src="pokemon.image" :alt="pokemon.name" class="w-24 h-24 mx-auto" />
+            <NuxtImg
+              :src="pokemon.image" 
+              :alt="pokemon.name" 
+              class="w-24 h-24 mx-auto pokemon-card-img"
+              height="48"
+              width="48"
+            />
           </div>
-          <!-- <h3 class="text-lg font-semibold text-center mb-2">{{ pokemon.translatedName || pokemon.name }}</h3> -->
         </div>
       </div>
 
       <UButton
-        :label="isLoading ? 'Leading...' : 'Load More'"
+        :label="isLoading ? 'loading...' : 'load more'"
         btn="outline"
+        class="bg-transparent border border-white/[0.2] hover:bg-dark-900 px-1 py-1 rounded-full transition-all"
         :loading="isLoading"
         @click="fetchPokemons();"
       />
     </div>
     <div v-if="isLoading" class="text-center mt-6 text-white italic dark:text-gray-300">{{
-      translations[currentLanguage].loading }}</div>
+      translations[currentLanguage as keyof typeof translations].loading }}</div>
     <PokemonDetails v-if="selectedPokemon" :pokemon="selectedPokemon" @close="selectedPokemon = null"
-      :translations="translations[currentLanguage]" :currentLanguage="currentLanguage" />
-  </div>
+      :translations="translations[currentLanguage as keyof typeof translations]" :currentLanguage="currentLanguage" />  </div>
 </template>
 
-<script setup>
+<script lang="ts" setup>
 import { ref, onMounted, onUnmounted, watch } from 'vue';
 import VanillaTilt from 'vanilla-tilt';
-  
-const currentLanguage   = ref('en');
-const pokemonList       = ref([]);
-const displayedPokemon  = ref([]);
+
+const currentLanguage   = ref<'en' | 'fr'>('en');
+const pokemonList       = ref<any[]>([]);
+const displayedPokemon  = ref<any[]>([]);
 const searchQuery       = ref('');
 const selectedPokemon   = ref(null);
 const isLoading         = ref(false);
 const pokemonGrid       = ref(null);
-const searchTimeout     = ref(null)
+const searchTimeout     = ref<NodeJS.Timeout | null>(null)
+const isMuted           = ref<boolean>(false)
 
 /** API limit. */
 const limit = 24;
@@ -100,7 +115,17 @@ let offset  = 0;
 
 const colorMode = useColorMode()
 
-const translations = {
+interface Translations {
+  search: string;
+  type: string;
+  loading: string;
+  height: string;
+  weight: string;
+  abilities: string;
+  stats: string;
+}
+
+const translations: Record<'en' | 'fr', Translations> = {
   en: {
     search: 'Search Pokémon...',
     type: 'Type',
@@ -121,8 +146,8 @@ const translations = {
   },
 };
 
-const getTypeClass = (type) => {
-  const typeClasses = {
+const getTypeClass = (type: string) => {
+  const typeClasses: Record<string, string> = {
     normal: 'bg-gray-400 text-white',
     fire: 'bg-red-500 text-white',
     water: 'bg-blue-500 text-white',
@@ -146,8 +171,8 @@ const getTypeClass = (type) => {
   return typeClasses[type.toLowerCase()] || 'bg-gray-400 text-white';
 };
 
-const getGradientStyle = (type) => {
-  const gradientColors = {
+const getGradientStyle = (type: string) => {
+  const gradientColors: Record<string, [string, string]> = {
     normal: ['#A8A878', '#C6C6A7'],
     fire: ['#F08030', '#F5AC78'],
     water: ['#6890F0', '#9DB7F5'],
@@ -242,9 +267,9 @@ const updateDisplayedPokemon = () => {
   }));
 };
 
-const getTranslatedName = (pokemon, language) => {
+const getTranslatedName = (pokemon: any, language: string) => {
   if (!pokemon.names) return pokemon.name;
-  const translation = pokemon.names.find(name => name.language.name === language);
+  const translation = pokemon.names.find((name: any) => name.language.name === language);
   return translation ? translation.name : pokemon.name;
 };
 
@@ -285,23 +310,31 @@ const searchPokemon = async () => {
   
   const pokemonResults = searchResults.map((x) => x.item)
 
-  displayedPokemon.value = pokemonResults.map((pokemon) => ({
+  displayedPokemon.value = pokemonResults.map((pokemon: any) => ({
     ...pokemon,
     translatedName: getTranslatedName(pokemon, currentLanguage.value),
   }))
 };
 
-const showDetails = async (pokemon) => {
+const showDetails = async (pokemon: any) => {
   const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemon.id}`);
   const data = await response.json();
   selectedPokemon.value = {
     ...pokemon,
     height: data.height,
     weight: data.weight,
-    abilities: data.abilities.map(ability => ability.ability.name),
-    stats: data.stats.map(stat => ({ name: stat.stat.name, value: stat.base_stat })),
+    abilities: data.abilities.map((ability: any) => ability.ability.name),
+    stats: data.stats.map((stat: any) => ({ name: stat.stat.name, value: stat.base_stat })),
   };
 };
+
+const playPokemonCry = (id: string) => {
+  isMuted.value = localStorage.getItem("isMuted") === "true"
+  if (isMuted.value) return
+
+  const audio = new Audio(`https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/${id}.ogg`)
+  audio.play()
+}
 
 const handleScroll = () => {
   if (searchQuery.value.trim().length > 0) return;
@@ -332,19 +365,20 @@ watch(currentLanguage, () => {
 });
 
 const initTilt = () => {
-  VanillaTilt.init(document.querySelectorAll(".pokemon-card"), {
+  VanillaTilt.init(Array.from(document.querySelectorAll(".pokemon-card")), {
     max: 25,
     speed: 400,
     glare: true,
     "max-glare": 0.5,
   });
 };
-
 onMounted(() => {
-  const savedLanguage = localStorage.getItem('preferredLanguage');
+  const savedLanguage = localStorage.getItem('preferredLanguage')
   if (savedLanguage) {
-    currentLanguage.value = savedLanguage;
+    currentLanguage.value = savedLanguage as 'fr' | 'en';
   }
+
+  isMuted.value = localStorage.getItem("isMuted") === "true"
   
   fetchPokemons();
   window.addEventListener('scroll', handleScroll);
@@ -384,7 +418,7 @@ watch(displayedPokemon, () => {
   transform: perspective(1000px);
 }
 
-.pokemon-card img {
+.pokemon-card-img {
   transform: translateZ(20px);
 }
 

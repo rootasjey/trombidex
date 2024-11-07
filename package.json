@@ -1,6 +1,8 @@
 {
   "name": "trombidex",
+  "description": "Trombidex is a web pokedex for fun and educational purposes.",
   "private": true,
+  "version": "0.12.1",
   "type": "module",
   "scripts": {
     "build": "nuxt build",
@@ -10,13 +12,19 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
+    "@nuxt/image": "^1.8.1",
     "@nuxtjs/color-mode": "^3.5.1",
     "@nuxtjs/i18n": "^8.0.0",
     "@una-ui/nuxt": "^0.28.0-beta.1",
     "@unocss/nuxt": "^0.58.6",
+    "@vueuse/core": "^11.2.0",
+    "@vueuse/motion": "^2.2.6",
     "fuse.js": "^7.0.0",
     "nuxt": "^3.13.2",
     "unstorage": "^1.12.0",
     "vanilla-tilt": "^1.8.1"
+  },
+  "devDependencies": {
+    "class-variance-authority": "^0.7.0"
   }
 }
