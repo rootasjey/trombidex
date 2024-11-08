@@ -1,0 +1,22 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /pokemons/{pokemonId} {
+      allow read: if true;
+    }
+
+    match /pokemons/{pokemonId}/data/community_stats {
+      allow read: if true;
+      allow update: if true;
+    }
+
+    match /pokemons/{pokemonId}/data/details {
+      allow read: if true;
+    }
+
+    match /pokemons/{pokemonId}/data/species {
+      allow read: if true;
+    }
+  }
+}
