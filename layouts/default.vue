@@ -22,7 +22,7 @@
       <slot />
     </main>
 
-    <footer class="absolute right-4 bottom-2">
+    <footer class="fixed right-4 bottom-2">
       <UButton 
         as="a" 
         to="https://github.com/rootasjey/trombidex" 
