@@ -1,5 +1,10 @@
 <template>
   <div class="max-w-7xl mx-auto font-sans">
+    <h2 v-if="searchQuery.length > 0"
+      class="text-sm font-600 mb-4 dark:text-white">
+      {{displayedPokemon.length}} pokemon{{ displayedPokemon.length > 1 ? "s" : "" }} found
+    </h2>
+
     <div class="flex flex-col sm:flex-row justify-between items-center mb-6">
       <input v-model="searchQuery" @input="debouncedSearch" :placeholder="translations[currentLanguage].search"
         class="font-sans flex-grow mb-4 sm:mb-0 sm:mr-4 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1.2 focus:ring-white-20 bg-white bg-opacity-50 backdrop-filter backdrop-blur-lg dark:bg-transparent dark:text-white dark:border-gray-900" />
@@ -39,7 +44,7 @@
                 <span 
                   class="text-xs font-mono font-600"
                   @click="showDetails(pokemon)">
-                  • {{ pokemon.id.toString().padStart(3, '0') }}
+                  • {{ pokemon.id?.toString().padStart(3, '0') }}
                 </span>
               </template>
 
@@ -78,17 +83,19 @@
           </div>
         </div>
       </div>
-
-      <div>
-        <UButton
-          :label="isLoading ? 'loading...' : 'load more'"
-          btn="outline"
-          class="bg-transparent light:bg-white light:hover:bg-gray/[.05] border dark:border-white/[0.2] dark:hover:bg-dark-900 px-8 py-1 rounded-full transition-all"
-          :loading="isLoading"
-          @click="fetchPokemons();"
-        />
-      </div>
     </div>
+
+
+    <div class="mt-8">
+      <UButton
+        :label="isLoading ? 'loading...' : 'load more'"
+        btn="outline"
+        class="bg-transparent light:bg-white light:hover:bg-gray/[.05] border dark:border-white/[0.2] dark:hover:bg-dark-900 px-8 py-1 rounded-full transition-all"
+        :loading="isLoading"
+        @click="fetchPokemons();"
+      />
+    </div>
+
     <div v-if="isLoading" class="text-center mt-6 text-white italic dark:text-gray-300">{{
       translations[currentLanguage as keyof typeof translations].loading }}</div>
     <PokemonDetails v-if="selectedPokemon" :pokemon="selectedPokemon" @close="selectedPokemon = null"
@@ -313,7 +320,7 @@ const searchPokemon = async () => {
     return;
   }
   
-  const pokemonResults = searchResults.map((x) => x.item)
+  const pokemonResults = searchResults
 
   displayedPokemon.value = pokemonResults.map((pokemon: any) => ({
     ...pokemon,

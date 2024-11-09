@@ -7,8 +7,8 @@ runConfig:
   # cpu: 1
   # memoryMiB: 512
 
-# Environment variables and secrets.
-# env:
+  # Environment variables and secrets.
+  # env:
   # Configure environment variables.
   # See https://firebase.google.com/docs/app-hosting/configure#user-defined-environment
   # - variable: MESSAGE
@@ -33,7 +33,10 @@ env:
     secret: firebaseAppId
   - variable: FIREBASE_MEASUREMENT_ID
     secret: firebaseMeasurementId
-
+  - variable: ALGOLIA_APP_ID
+    secret: algoliaAppId
+  - variable: ALGOLIA_API_KEY
+    secret: algoliaApiKey
   # Grant access to secrets in Cloud Secret Manager.
   # See https://firebase.google.com/docs/app-hosting/configure#secret-parameters
   # - variable: MY_SECRET
