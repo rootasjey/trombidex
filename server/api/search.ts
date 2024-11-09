@@ -14,7 +14,7 @@ export default defineCachedEventHandler(async (event) => {
   const cachedData = await storage.getItem('pokemon-list')
   if (cachedData) { return fuse.search(query) }
 
-  const response = await fetch(`https://pokeapi.co/api/v2/pokemon?limit=1000`);
+  const response = await fetch(`https://pokeapi.co/api/v2/pokemon?limit=20`);
   const data = await response.json();
 
   const pokemonDetails = await Promise.all(data.results.map(async (pokemon: { url: string | URL | Request; name: any; }) => {
