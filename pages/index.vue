@@ -103,6 +103,7 @@ const displayedPokemon  = ref<any[]>([]);
 const searchQuery       = ref('');
 const selectedPokemon   = ref(null);
 const isLoading         = ref(false);
+const hasMore           = ref(true);
 const pokemonGrid       = ref(null);
 const searchTimeout     = ref<NodeJS.Timeout | null>(null)
 const isMuted           = ref<boolean>(false)
@@ -244,21 +245,23 @@ const gridColumnClass = {
  * The function checks if a fetch is already in progress before starting a new one. It then fetches the new Pokemon, updates the Pokemon list and the displayed Pokemon list, and increments the offset for the next fetch.
  */
 const fetchPokemons = async () => {
-  if (isLoading.value) return;
+  if (isLoading.value || !hasMore.value) return;
   isLoading.value = true;
 
-  const newPokemon = await $fetch('/api/list', {
+  const newPokemonList = await $fetch('/api/list', {
     params: {
       limit,
       offset
     }
   });
 
-  pokemonList.value = [...pokemonList.value, ...newPokemon];
+  pokemonList.value = [...pokemonList.value, ...newPokemonList];
   updateDisplayedPokemon();
-  offset += limit;
+
+  offset += limit
   isLoading.value = false;
-};
+  hasMore.value = newPokemonList.length === limit;
+}
 
 const updateDisplayedPokemon = () => {
   displayedPokemon.value = pokemonList.value.map(pokemon => ({
