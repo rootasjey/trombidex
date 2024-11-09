@@ -79,6 +79,7 @@ const extractPokemonData = (data: FirebaseFirestore.DocumentData) => {
   const {
     height,
     id,
+    image,
     name,
     weight,
   } = data
@@ -121,6 +122,7 @@ const extractPokemonData = (data: FirebaseFirestore.DocumentData) => {
     game_indices,
     height,
     id,
+    image,
     name,
     names,
     types,
