@@ -79,13 +79,15 @@
         </div>
       </div>
 
-      <UButton
-        :label="isLoading ? 'loading...' : 'load more'"
-        btn="outline"
-        class="bg-transparent border border-white/[0.2] hover:bg-dark-900 px-1 py-1 rounded-full transition-all"
-        :loading="isLoading"
-        @click="fetchPokemons();"
-      />
+      <div>
+        <UButton
+          :label="isLoading ? 'loading...' : 'load more'"
+          btn="outline"
+          class="bg-transparent light:bg-white light:hover:bg-gray/[.05] border dark:border-white/[0.2] dark:hover:bg-dark-900 px-8 py-1 rounded-full transition-all"
+          :loading="isLoading"
+          @click="fetchPokemons();"
+        />
+      </div>
     </div>
     <div v-if="isLoading" class="text-center mt-6 text-white italic dark:text-gray-300">{{
       translations[currentLanguage as keyof typeof translations].loading }}</div>
