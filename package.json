@@ -2,7 +2,7 @@
   "name": "trombidex",
   "description": "Trombidex is a web pokedex for fun and educational purposes.",
   "private": true,
-  "version": "0.16.0",
+  "version": "0.17.0",
   "type": "module",
   "scripts": {
     "build": "nuxt build",
@@ -22,7 +22,8 @@
     "algoliasearch": "^5.13.0",
     "firebase": "^11.0.1",
     "nuxt": "^3.13.2",
-    "vanilla-tilt": "^1.8.1"
+    "vanilla-tilt": "^1.8.1",
+    "vue-confetti-explosion": "^1.0.2"
   },
   "devDependencies": {
     "class-variance-authority": "^0.7.0"

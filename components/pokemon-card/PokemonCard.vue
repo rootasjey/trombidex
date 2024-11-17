@@ -7,10 +7,11 @@
     cursor-pointer border border-black/[0.1] dark:border-white/[0.05]
   hover:border-black/[0.2] hover:border-dashed hover:transform-scale-110
     dark:hover:border-white/[0.2]"
-    @click="$emit('play-cry', pokemon.id)"
+    @click="onClickPokemon(pokemon);$emit('click-pokemon', pokemon)"
     @mouseenter="$emit('mouseenter', pokemon)"
     @mouseleave="$emit('mouseleave', pokemon)">
     <div class="flex flex-row justify-between mb-2 pokemon-card-id">
+      <ConfettiExplosion v-if="visible" />
         <UTooltip 
           size="xs" 
           :_tooltip-provider="{
@@ -20,7 +21,7 @@
           <template #default>
             <span 
               class="text-xs font-mono font-600"
-              @click="$emit('show-details', pokemon)">
+              @click.stop="$emit('show-details', pokemon)">
               • {{ pokemon.id?.toString().padStart(3, '0') }}
             </span>
           </template>
@@ -64,18 +65,28 @@
           absolute right-2 bottom-2 ">
         <span>{{ pokemon.likes }}</span>
         <NuxtImg
-        src="/images/heart.svg"
-        alt="like"
-        class="w-4 h-4 
-          rounded-full 
-          dark:invert"
-        @click="$emit('like', pokemon)"
-      />
+          src="/images/heart.svg"
+          alt="like"
+          class="w-4 h-4 
+            rounded-full 
+            dark:invert"
+          @click="$emit('like', pokemon)"
+        />
       </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import ConfettiExplosion from "vue-confetti-explosion"
+
+const visible = ref(false)
+
+const onClickPokemon = async (pokemon: any) => {
+  visible.value = false
+  await nextTick()
+  visible.value = true
+}
+
 defineProps<{
   pokemon: {
     id: number;
@@ -88,7 +99,7 @@ defineProps<{
 }>()
 
 defineEmits<{
-  'play-cry': [id: number];
+  'click-pokemon': [pokemon: any];
   'show-details': [pokemon: any];
   'like': [pokemon: any];
   'mouseenter': [pokemon: any];

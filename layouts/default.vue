@@ -11,11 +11,6 @@
         <h1 class="text-4xl font-sans font-400 mt-12">Trombidex</h1>
         <span class="text-sm opacity-50 font-sans font-200">Search tiny and big creatures, explore another world </span>
       </div>
-
-      <div class="absolute top-2 right-6 flex justify-center items-center mt-4">
-        <ThemeButton @click="toggleColorMode" />
-        <SoundButton @click="toggleMute" />
-      </div>
     </header>
 
     <main class="flex-grow p-6 md:p-8 lg:p-10 dark:text-white">
@@ -38,22 +33,6 @@
 
 <script setup>
 import { version } from '../package.json'
-
-const colorMode = useColorMode()
-const isMuted = ref(false)
-
-const toggleColorMode = () => {
-  colorMode.preference = colorMode.value === 'dark' ? 'light' : 'dark'
-}
-
-const toggleMute = () => {
-  isMuted.value = !isMuted.value
-  localStorage.setItem("isMuted", isMuted.value)
-
-  document.querySelectorAll('audio, video').forEach(el => {
-    el.muted = isMuted.value
-  })
-}
 </script>
 
 <style scoped>

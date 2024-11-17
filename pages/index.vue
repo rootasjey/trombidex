@@ -5,16 +5,40 @@
       {{displayedPokemon.length}} pokemon{{ displayedPokemon.length > 1 ? "s" : "" }} found
     </h2>
 
-    <div class="flex flex-col sm:flex-row justify-between items-center mb-6">
-      <input v-model="searchQuery" @input="debouncedSearch" :placeholder="translations[currentLanguage].search"
-        class="font-sans flex-grow mb-4 sm:mb-0 sm:mr-4 p-2 
-          border border-gray-300 rounded-md focus:outline-none 
-          focus:border-dashed focus:border-gray-500
-          bg-white bg-opacity-50 backdrop-filter backdrop-blur-lg 
-          dark:bg-transparent dark:text-white dark:border-gray-900" />
-      
+    <div class="flex flex-row sm:flex-row gap-4 justify-between items-center mb-0">
+      <div class="relative flex-grow sm:mb-4 sm:mb-0 sm:mr-4">
+        <NuxtImg
+          src="/images/search.svg"
+          alt="like"
+          class="w-6 h-6 rounded-full relative top-8.4 left-2 z-1 dark:invert filter-[#9CA3AF]"
+          style="filter: invert(70%) sepia(12%) saturate(288%) hue-rotate(176deg) brightness(89%) contrast(84%);"
+        />
+        <input 
+          v-model="searchQuery" 
+          @input="debouncedSearch" 
+          :placeholder="translations[currentLanguage].search"
+          class="w-full pl-10 p-2 
+            border border-gray-300 rounded-md focus:outline-none 
+            focus:border-dashed focus:border-gray-500
+            bg-white bg-opacity-50 backdrop-filter backdrop-blur-lg 
+            dark:bg-transparent dark:text-white dark:border-gray-900" 
+        />
+      </div>
+      <button class="button flex sm:hidden"  @click="isSettingsOpen = !isSettingsOpen">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" viewBox="0 0 20 20" height="20" fill="none" class="svg-icon"><g stroke-width="1.5" stroke-linecap="round" stroke="#5d41de"><circle r="2.5" cy="10" cx="10"></circle><path fill-rule="evenodd" d="m8.39079 2.80235c.53842-1.51424 2.67991-1.51424 3.21831-.00001.3392.95358 1.4284 1.40477 2.3425.97027 1.4514-.68995 2.9657.82427 2.2758 2.27575-.4345.91407.0166 2.00334.9702 2.34248 1.5143.53842 1.5143 2.67996 0 3.21836-.9536.3391-1.4047 1.4284-.9702 2.3425.6899 1.4514-.8244 2.9656-2.2758 2.2757-.9141-.4345-2.0033.0167-2.3425.9703-.5384 1.5142-2.67989 1.5142-3.21831 0-.33914-.9536-1.4284-1.4048-2.34247-.9703-1.45148.6899-2.96571-.8243-2.27575-2.2757.43449-.9141-.01669-2.0034-.97028-2.3425-1.51422-.5384-1.51422-2.67994.00001-3.21836.95358-.33914 1.40476-1.42841.97027-2.34248-.68996-1.45148.82427-2.9657 2.27575-2.27575.91407.4345 2.00333-.01669 2.34247-.97026z" clip-rule="evenodd"></path></g></svg>
+      </button>
+
+      <div class="gap-2 justify-center items-center hidden sm:flex">
+        <VolumeSlider 
+          @volume-change="handleVolumeChange" 
+          @mute-change="handleMuteChange" 
+        />
+        <ToggleTheme />
+      </div>
+
       <select v-model="currentLanguage" @change="changeLanguage"
         class="
+        hidden sm:block
         font-sans p-2 border border-gray-300 rounded-md 
         focus:outline-none focus:ring-1.2 focus:ring-white/20 bg-white bg-opacity-50 
         backdrop-filter backdrop-blur-lg dark:bg-transparent dark:text-white dark:border-gray-900">
@@ -23,17 +47,25 @@
       </select>
     </div>
 
-    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6" 
-        :class="`lg:grid-cols-${numberOfRows}`"
-        ref="pokemonGrid"
+    <ControlPanel
+      class="block sm:hidden mt-4 overflow-hidden transition-all duration-300"
+      :class="isSettingsOpen ? 'h-15' : 'h-0'"
+      @volume-change="handleVolumeChange"
+      @mute-change="handleMuteChange"
+      @language-change="changeLanguage"
+    />
+
+    <div 
+      class="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-5 gap-6 mt-12 sm:mt-0" 
+      :class="`lg:grid-cols-${numberOfRows}`"
+      ref="pokemonGrid"
     >
       <PokemonCard 
         v-for="pokemon in displayedPokemon" 
         :key="pokemon.id"
         :pokemon="pokemon"
-        @play-cry="playPokemonCry"
+        @click-pokemon="playPokemonCryAndLike"
         @show-details="showDetails"
-        @like="likePokemon"
         @mouseenter="handlePokemonMouseEnter"
       />
     </div>
@@ -42,16 +74,19 @@
       <UButton
         :label="isLoading ? 'loading...' : 'load more'"
         btn="outline"
-        class="bg-transparent light:bg-white light:hover:bg-gray/[.05] border dark:border-white/[0.2] dark:hover:bg-dark-900 px-8 py-1 rounded-full transition-all"
+        class="bg-transparent light:bg-white light:hover:bg-gray/[.05] border dark:border-white/[0.2] dark:hover:bg-dark-900 px-8 py-1 rounded-sm hover:scale-98 transition-all"
         :loading="isLoading"
         @click="fetchPokemons();"
       />
     </div>
 
-    <div v-if="isLoading" class="text-center mt-6 text-white italic dark:text-gray-300">{{
-      translations[currentLanguage as keyof typeof translations].loading }}</div>
-    <PokemonDetails v-if="selectedPokemon" :pokemon="selectedPokemon" @close="selectedPokemon = null"
-      :translations="translations[currentLanguage as keyof typeof translations]" :currentLanguage="currentLanguage" />  </div>
+    <div v-if="isLoading" class="text-center mt-6 text-white italic dark:text-gray-300">
+      {{ translations[currentLanguage as keyof typeof translations].loading }}
+    </div>
+
+      <PokemonDetails v-if="selectedPokemon" :pokemon="selectedPokemon" @close="selectedPokemon = null"
+        :translations="translations[currentLanguage as keyof typeof translations]" :currentLanguage="currentLanguage" />
+    </div>
 </template>
 
 <script lang="ts" setup>
@@ -68,7 +103,8 @@ const hasMore           = ref(true);
 const pokemonGrid       = ref(null);
 const searchTimeout     = ref<NodeJS.Timeout | null>(null)
 const isMuted           = ref<boolean>(false)
-
+const currentVolume     = ref<number>(0.5)
+const isSettingsOpen    = ref(false)
 /** API limit. */
 const limit = 24;
 
@@ -239,11 +275,16 @@ const showDetails = async (pokemon: any) => {
   };
 };
 
-const playPokemonCry = (id: number) => {
-  isMuted.value = localStorage.getItem("isMuted") === "true"
-  if (isMuted.value) return
+const playPokemonCryAndLike = (pokemon: any) => {
+  playPokemonCry(pokemon.id)
+  likePokemon(pokemon)
+}
 
+const playPokemonCry = (id: number) => {
+  if (isMuted.value) return
+  
   const audio = new Audio(`https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/${id}.ogg`)
+  audio.volume = currentVolume.value
   audio.play()
 }
 
@@ -277,7 +318,6 @@ const getPokemonLikes = async (pokemonId: string) => {
       method: 'GET',
   })
 }
-
 
 const handleScroll = () => {
   if (searchQuery.value.trim().length > 0) return;
@@ -317,6 +357,20 @@ const initTilt = () => {
     reverse: true,
   });
 };
+
+const handleVolumeChange = (volume: number) => {
+  localStorage.setItem("volume", volume.toString())
+  localStorage.setItem("isMuted", "false")
+  isMuted.value = false
+  currentVolume.value = volume
+  console.log("Volume changed to:", volume);
+}
+
+const handleMuteChange = (muted: boolean) => {
+  isMuted.value = muted
+  localStorage.setItem("isMuted", muted.toString())
+}
+
 onMounted(() => {
   const savedLanguage = localStorage.getItem('preferredLanguage')
   if (savedLanguage) {
@@ -335,6 +389,9 @@ onMounted(() => {
 
   window.addEventListener('resize', updateGridColumns)
   updateGridColumns() // Initial call
+
+  currentVolume.value = parseFloat(localStorage.getItem("volume") ?? "0.5")
+  isMuted.value = localStorage.getItem("isMuted") === "true"
 });
 
 onUnmounted(() => {
@@ -358,4 +415,33 @@ watch(displayedPokemon, () => {
 </script>
 
 <style scoped>
+  .button {
+    justify-content: center;
+    align-items: center;
+    padding: 6px 12px;
+    gap: 8px;
+    height: 36px;
+    border: none;
+    background: #5e41de33;
+    border-radius: 20px;
+    cursor: pointer;
+  }
+
+  .button:hover {
+    background: #5e41de4d;
+  }
+
+  .button:hover .svg-icon {
+    animation: spin 2s linear infinite;
+  }
+
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+
+    100% {
+      transform: rotate(360deg);
+    }
+  }
 </style>
